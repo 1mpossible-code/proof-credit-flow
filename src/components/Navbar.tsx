@@ -43,17 +43,20 @@ const Navbar = () => {
         <div>
           {connected ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground font-mono">{address}</span>
+              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-sm text-primary font-mono">{address}</span>
+              </div>
               <button onClick={disconnect} className="glow-button-outline text-sm px-4 py-2 flex items-center gap-2">
                 <LogOut className="w-4 h-4" />
                 Disconnect
               </button>
             </div>
           ) : (
-            <button onClick={connect} className="glow-button text-sm flex items-center gap-2">
+            <Link to="/login" className="glow-button text-sm flex items-center gap-2 px-4 py-2">
               <Wallet className="w-4 h-4" />
-              Connect Wallet
-            </button>
+              Enter
+            </Link>
           )}
         </div>
       </div>
