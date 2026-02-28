@@ -76,12 +76,12 @@ const BorrowForm = () => {
         <div className="animate-fade-in" style={{ animationDelay: "100ms" }}>
           <h2 className="font-heading text-2xl font-bold mb-4">Credit Profile</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <FormField label="Credit Score (300–850)" value={creditScore} onChange={setCreditScore} type="number" />
-            <FormField label="Monthly Income (Net)" value={monthlyIncome} onChange={setMonthlyIncome} type="number" />
-            <FormField label="Monthly Debt Payments" value={monthlyDebtPayments} onChange={setMonthlyDebtPayments} type="number" />
-            <FormField label="Employment Tenure (months)" value={employmentTenure} onChange={setEmploymentTenure} type="number" />
-            <FormField label="Income Volatility % (0–100)" value={incomeVolatility} onChange={setIncomeVolatility} type="number" />
-            <FormField label="Past Defaults (0 or 1+)" value={pastDefaults} onChange={setPastDefaults} type="number" />
+            <FormField label="Credit Score (300–850)" value={creditScore} onChange={setCreditScore} type="number" readOnly />
+            <FormField label="Monthly Income (Net)" value={monthlyIncome} onChange={setMonthlyIncome} type="number" readOnly />
+            <FormField label="Monthly Debt Payments" value={monthlyDebtPayments} onChange={setMonthlyDebtPayments} type="number" readOnly />
+            <FormField label="Employment Tenure (months)" value={employmentTenure} onChange={setEmploymentTenure} type="number" readOnly />
+            <FormField label="Income Volatility % (0–100)" value={incomeVolatility} onChange={setIncomeVolatility} type="number" readOnly />
+            <FormField label="Past Defaults (0 or 1+)" value={pastDefaults} onChange={setPastDefaults} type="number" readOnly />
           </div>
         </div>
 
@@ -181,11 +181,11 @@ const BorrowForm = () => {
   );
 };
 
-function FormField({ label, value, onChange, type }: { label: string; value: string; onChange: (v: string) => void; type: string }) {
+function FormField({ label, value, onChange, type, readOnly }: { label: string; value: string; onChange: (v: string) => void; type: string; readOnly?: boolean }) {
   return (
     <div>
       <label className="text-sm text-muted-foreground mb-1 block">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none transition" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} readOnly={readOnly} className={`w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none transition ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`} />
     </div>
   );
 }
