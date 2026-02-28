@@ -76,14 +76,25 @@ export function computeRiskScores(inputs: RiskInputs): RiskScores {
   return { repayability, incomeStability, creditHistory, overall, tier };
 }
 
-export function computeRecommendations(riskScore: number, monthlyIncome: number) {
+export function computeRecommendations(riskScore: number, monthlyIncome: number, repayability?: number) {
   const recommendedAPR = clamp(6 + (100 - riskScore) * 0.15, 5, 30);
   const aprRange: [number, number] = [
     clamp(recommendedAPR - 1.0, 5, 30),
     clamp(recommendedAPR + 1.5, 5, 30),
   ];
-  const suggestedMaxLoan = monthlyIncome * (riskScore >= 80 ? 4 : riskScore >= 60 ? 2.5 : 1.5);
-  const suggestedDuration = riskScore >= 80 ? "7 days" : riskScore >= 60 ? "3 days" : "1 day";
+  const rawMax = monthlyIncome * (riskScore >= 80 ? 4 : riskScore >= 60 ? 2.5 : 1.5);
+  const suggestedMaxLoan = Math.round(clamp(rawMax, 500, 50000) / 100) * 100;
+
+  const rep = repayability ?? 50;
+  let suggestedDuration: string;
+  if (riskScore >= 80) {
+    suggestedDuration = "7 days";
+  } else if (riskScore >= 60) {
+    suggestedDuration = rep < 70 ? "3 days" : "5 days";
+  } else {
+    suggestedDuration = rep < 40 ? "12 hours" : "1 day";
+  }
+
   return { recommendedAPR, aprRange, suggestedMaxLoan, suggestedDuration };
 }
 

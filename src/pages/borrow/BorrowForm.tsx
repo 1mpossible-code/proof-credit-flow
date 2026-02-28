@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Eye, ArrowRight } from "lucide-react";
+import { CheckCircle, Eye, ArrowRight, HelpCircle } from "lucide-react";
 import RiskSummaryStrip from "@/components/RiskSummaryStrip";
 import RecommendedTermsCard from "@/components/RecommendedTermsCard";
 import { useRiskScore, computeRecommendations, DURATION_PRESETS } from "@/hooks/useRiskScore";
@@ -37,7 +37,7 @@ const BorrowForm = () => {
     durationDays: repaymentDays,
   });
 
-  const recommendations = computeRecommendations(scores.overall, Number(monthlyIncome) || 0);
+  const recommendations = computeRecommendations(scores.overall, Number(monthlyIncome) || 0, scores.repayability);
   const proofBadges = ["Income Verified", "Stability Verified", "Tenure Verified"];
 
   const isUntilClear = repaymentDuration === "Until Clear";
@@ -75,7 +75,15 @@ const BorrowForm = () => {
 
         {/* Credit Profile (read-only, verified via ZK) */}
         <div className="animate-fade-in" style={{ animationDelay: "100ms" }}>
-          <h2 className="font-heading text-2xl font-bold mb-4">Credit Profile</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-heading text-2xl font-bold">Your Credit Profile</h2>
+            <div className="relative group">
+              <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs rounded-lg shadow-lg border border-border opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Based on your verified documents
+              </div>
+            </div>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { label: "Credit Score", value: creditScore },
