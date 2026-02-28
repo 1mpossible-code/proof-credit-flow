@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WalletProvider } from "@/contexts/WalletContext";
 import Navbar from "@/components/Navbar";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
 import WorkflowSelect from "@/pages/WorkflowSelect";
 import CreditVerification from "@/pages/borrow/CreditVerification";
 import AIMatching from "@/pages/borrow/AIMatching";
@@ -29,6 +30,7 @@ const App = () => (
           <Navbar />
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/select" element={<WorkflowSelect />} />
             <Route path="/borrow/verify" element={<CreditVerification />} />
             <Route path="/borrow/matching" element={<AIMatching />} />

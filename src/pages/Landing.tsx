@@ -1,20 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useWallet } from "@/contexts/WalletContext";
-import { Wallet, Shield, Lock, Zap } from "lucide-react";
+import { ArrowRight, Shield, Lock, Zap } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const Landing = () => {
-  const { connected, connect } = useWallet();
   const navigate = useNavigate();
-
-  const handleConnect = () => {
-    if (connected) {
-      navigate("/select");
-    } else {
-      connect();
-      setTimeout(() => navigate("/select"), 300);
-    }
-  };
 
   const features = [
     { icon: Shield, title: "Private by Default", desc: "Zero-knowledge proofs keep your data confidential while proving creditworthiness." },
@@ -46,21 +35,21 @@ const Landing = () => {
             Borrow or lend using private verification and onchain execution.
           </p>
 
-          <button onClick={handleConnect} className="glow-button text-lg px-8 py-4 flex items-center gap-3 mx-auto">
-            <Wallet className="w-5 h-5" />
-            {connected ? "Enter App" : "Connect Wallet"}
+          <button onClick={() => navigate("/login")} className="glow-button text-lg px-8 py-4 flex items-center gap-3 mx-auto">
+            <ArrowRight className="w-5 h-5" />
+            Enter
           </button>
         </div>
       </section>
 
       {/* Features */}
-      <section className="relative z-10 px-6 pb-20 -mt-10">
+      <section className="relative z-10 px-6 py-20">
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
           {features.map((f, i) => (
             <div
               key={f.title}
               className="glow-card p-6 opacity-0 animate-fade-in"
-              style={{ animationDelay: `${i * 150 + 300}ms` }}
+              style={{ animationDelay: `${i * 150 + 300}ms`, animationFillMode: "forwards" }}
             >
               <f.icon className="w-8 h-8 text-primary mb-4" />
               <h3 className="font-heading text-lg font-semibold mb-2">{f.title}</h3>
