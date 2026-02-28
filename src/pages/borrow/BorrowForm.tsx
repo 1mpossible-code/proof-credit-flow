@@ -10,20 +10,21 @@ const BorrowForm = () => {
   const [amount, setAmount] = useState("10000");
   const [collateral, setCollateral] = useState("5000");
   const [maxApr, setMaxApr] = useState(8);
-  const [duration, setDuration] = useState("7 days");
+  const [askDuration, setAskDuration] = useState("7 days");
+  const [repaymentDuration, setRepaymentDuration] = useState("7 days");
   const [requestMode, setRequestMode] = useState<"until_filled" | "deadline">("until_filled");
   const [allowPartial, setAllowPartial] = useState(true);
   const [showProofModal, setShowProofModal] = useState(false);
 
-  // Risk input fields
-  const [creditScore, setCreditScore] = useState("700");
-  const [monthlyIncome, setMonthlyIncome] = useState("5000");
-  const [monthlyDebtPayments, setMonthlyDebtPayments] = useState("500");
-  const [employmentTenure, setEmploymentTenure] = useState("24");
-  const [incomeVolatility, setIncomeVolatility] = useState("8");
-  const [pastDefaults, setPastDefaults] = useState("0");
+  // Fixed credit profile (read-only, verified via ZK)
+  const creditScore = "700";
+  const monthlyIncome = "5000";
+  const monthlyDebtPayments = "500";
+  const employmentTenure = "24";
+  const incomeVolatility = "8";
+  const pastDefaults = "0";
 
-  const durationDays = DURATION_PRESETS.find((p) => p.label === duration)?.days ?? 7;
+  const repaymentDays = DURATION_PRESETS.find((p) => p.label === repaymentDuration)?.days ?? 7;
 
   const scores = useRiskScore({
     creditScore: Number(creditScore) || 300,
@@ -33,13 +34,13 @@ const BorrowForm = () => {
     incomeVolatility: Number(incomeVolatility) || 0,
     pastDefaults: Number(pastDefaults) || 0,
     loanAmount: Number(amount) || 0,
-    durationDays,
+    durationDays: repaymentDays,
   });
 
   const recommendations = computeRecommendations(scores.overall, Number(monthlyIncome) || 0);
   const proofBadges = ["Income Verified", "Stability Verified", "Tenure Verified"];
 
-  const isUntilClear = duration === "Until Clear";
+  const isUntilClear = repaymentDuration === "Until Clear";
 
   return (
     <div className="min-h-screen pt-24 px-6 pb-12">
@@ -72,16 +73,23 @@ const BorrowForm = () => {
           </button>
         </div>
 
-        {/* Risk Input Fields */}
+        {/* Credit Profile (read-only, verified via ZK) */}
         <div className="animate-fade-in" style={{ animationDelay: "100ms" }}>
           <h2 className="font-heading text-2xl font-bold mb-4">Credit Profile</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <FormField label="Credit Score (300–850)" value={creditScore} onChange={setCreditScore} type="number" readOnly />
-            <FormField label="Monthly Income (Net)" value={monthlyIncome} onChange={setMonthlyIncome} type="number" readOnly />
-            <FormField label="Monthly Debt Payments" value={monthlyDebtPayments} onChange={setMonthlyDebtPayments} type="number" readOnly />
-            <FormField label="Employment Tenure (months)" value={employmentTenure} onChange={setEmploymentTenure} type="number" readOnly />
-            <FormField label="Income Volatility % (0–100)" value={incomeVolatility} onChange={setIncomeVolatility} type="number" readOnly />
-            <FormField label="Past Defaults (0 or 1+)" value={pastDefaults} onChange={setPastDefaults} type="number" readOnly />
+            {[
+              { label: "Credit Score", value: creditScore },
+              { label: "Monthly Income (Net)", value: `$${monthlyIncome}` },
+              { label: "Monthly Debt Payments", value: `$${monthlyDebtPayments}` },
+              { label: "Employment Tenure", value: `${employmentTenure} months` },
+              { label: "Income Volatility", value: `${incomeVolatility}%` },
+              { label: "Past Defaults", value: pastDefaults },
+            ].map((item) => (
+              <div key={item.label} className="bg-secondary/50 border border-border rounded-xl px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-0.5">{item.label}</p>
+                <p className="text-sm font-semibold text-foreground">{item.value}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -100,13 +108,23 @@ const BorrowForm = () => {
             <input type="range" min={1} max={30} step={0.1} value={maxApr} onChange={(e) => setMaxApr(parseFloat(e.target.value))} className="w-full accent-primary" />
           </div>
 
-          <div className="mt-4">
-            <label className="text-sm text-muted-foreground mb-1 block">Duration</label>
-            <select value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none transition">
-              {DURATION_PRESETS.map((p) => (
-                <option key={p.label} value={p.label}>{p.label}</option>
-              ))}
-            </select>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Ask Duration (listing active for)</label>
+              <select value={askDuration} onChange={(e) => setAskDuration(e.target.value)} className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none transition">
+                {DURATION_PRESETS.map((p) => (
+                  <option key={p.label} value={p.label}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Length Until Repayment</label>
+              <select value={repaymentDuration} onChange={(e) => setRepaymentDuration(e.target.value)} className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none transition">
+                {DURATION_PRESETS.map((p) => (
+                  <option key={p.label} value={p.label}>{p.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -147,7 +165,7 @@ const BorrowForm = () => {
           onApplyAmount={(amt) => setAmount(String(Math.round(amt)))}
           onApplyDuration={(dur) => {
             const match = DURATION_PRESETS.find((p) => p.label === dur);
-            if (match) setDuration(match.label);
+            if (match) setRepaymentDuration(match.label);
           }}
         />
 
