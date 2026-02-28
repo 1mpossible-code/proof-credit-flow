@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { CheckCircle, Sparkles, Lock, Loader2 } from "lucide-react";
+import { CheckCircle, Lock, Loader2 } from "lucide-react";
+import BidSuggestionBox from "@/components/BidSuggestionBox";
+import { DURATION_PRESETS, computeSuggestedBidAPR } from "@/hooks/useRiskScore";
 
 const DealDetail = () => {
   const { id } = useParams();
   const [bidAmount, setBidAmount] = useState("2000");
   const [aprOffer, setAprOffer] = useState("7.4");
   const [bidExpiry, setBidExpiry] = useState("2m");
+  const [bidDuration, setBidDuration] = useState("7 days");
   const [partialFill, setPartialFill] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  // Simulated borrower risk score for this deal
+  const borrowerRiskScore = 72; // Medium
+  const borrowerTier = "Medium";
+
+  const durationDays = DURATION_PRESETS.find((p) => p.label === bidDuration)?.days ?? 7;
+  const suggestedAPR = useMemo(() => computeSuggestedBidAPR(borrowerRiskScore, durationDays), [durationDays]);
 
   const handleSubmit = () => {
     setConfirming(true);
@@ -31,9 +41,9 @@ const DealDetail = () => {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Amount Requested</span><span>$10,000</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Collateral</span><span>$5,500 (55%)</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span>14 days</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span>7 days</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Fill Progress</span><span>42%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Risk Tier</span><span className="badge-low px-2 py-0.5 rounded-full text-xs">Low</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Risk Tier</span><span className="badge-medium px-2 py-0.5 rounded-full text-xs">{borrowerTier}</span></div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-border">
@@ -56,7 +66,6 @@ const DealDetail = () => {
           <div className="space-y-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
             <div className="glow-card p-6">
               <h3 className="font-heading font-semibold mb-4">Place Your Bid</h3>
-
               <div className="space-y-4">
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">Amount to Lend (USDC)</label>
@@ -65,6 +74,14 @@ const DealDetail = () => {
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">APR Offer (%)</label>
                   <input type="number" step="0.1" value={aprOffer} onChange={(e) => setAprOffer(e.target.value)} className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Bid Duration</label>
+                  <select value={bidDuration} onChange={(e) => setBidDuration(e.target.value)} className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:outline-none">
+                    {DURATION_PRESETS.map((p) => (
+                      <option key={p.label} value={p.label}>{p.label}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">Bid Expiry</label>
@@ -83,15 +100,12 @@ const DealDetail = () => {
             </div>
 
             {/* AI Suggestion */}
-            <div className="glow-card glow-card-active p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="font-heading text-sm font-semibold">AI Suggested Bid</span>
-              </div>
-              <p className="text-sm mb-1"><span className="text-muted-foreground">Suggested APR:</span> <span className="font-semibold">7.4%</span></p>
-              <p className="text-xs text-muted-foreground mb-3">Medium Risk + 55% Collateral + 14d Duration</p>
-              <button onClick={() => setAprOffer("7.4")} className="glow-button-outline text-xs px-3 py-1.5">Apply Suggested Bid</button>
-            </div>
+            <BidSuggestionBox
+              suggestedAPR={suggestedAPR}
+              riskTier={borrowerTier}
+              durationLabel={bidDuration}
+              onApply={() => setAprOffer(suggestedAPR.toFixed(1))}
+            />
 
             {confirmed ? (
               <div className="glow-card glow-card-active p-6 text-center">
